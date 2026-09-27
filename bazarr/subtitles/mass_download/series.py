@@ -183,7 +183,8 @@ def episode_download_subtitles(no, job_id=None, job_sub_function=False, provider
         jobs_queue.update_job_name(job_id=job_id, new_job_name=f"Downloaded missing subtitles for {episode.title}")
 
 
-def episode_download_specific_subtitles(sonarr_series_id, sonarr_episode_id, language, hi, forced, job_id=None):
+def episode_download_specific_subtitles(sonarr_series_id, sonarr_episode_id, language, hi, forced, job_id=None,
+                                        provider=None):
     if not job_id:
         return jobs_queue.add_job_from_function("Searching subtitles", progress_max=1, is_progress=False)
 
@@ -233,7 +234,7 @@ def episode_download_specific_subtitles(sonarr_series_id, sonarr_episode_id, lan
     try:
         result = list(generate_subtitles(episodePath, [(language, hi, forced)], audio_language, sceneName,
                                          title, 'series', profile_id=get_profile_id(episode_id=sonarr_episode_id),
-                                         job_id=job_id))
+                                         job_id=job_id, provider=provider))
         if isinstance(result, list) and len(result):
             result = result[0]
             store_subtitles(sonarr_episode_id)

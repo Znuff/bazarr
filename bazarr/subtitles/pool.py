@@ -30,7 +30,10 @@ def _init_pool(media_type, profile_id=None, providers=None):
 _pools = {}
 
 
-def _get_pool(media_type, profile_id=None):
+def _get_pool(media_type, profile_id=None, providers=None):
+    if providers is not None:
+        return _init_pool(media_type, profile_id, providers=providers)
+
     try:
         return _pools[f'{media_type}_{profile_id or ""}']
     except KeyError:

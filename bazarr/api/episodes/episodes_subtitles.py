@@ -8,6 +8,7 @@ from subliminal_patch.core import SUBTITLE_EXTENSIONS
 from werkzeug.datastructures import FileStorage
 
 from app.database import TableEpisodes, database, select, TableEpisodesSubtitles
+from app.get_providers import get_providers
 from utilities.path_mappings import path_mappings
 from subtitles.upload import manual_upload_subtitle
 from subtitles.mass_download.series import episode_download_specific_subtitles
@@ -26,22 +27,29 @@ class EpisodesSubtitles(Resource):
     patch_request_parser.add_argument('language', type=str, required=True, help='Language code2')
     patch_request_parser.add_argument('forced', type=str, required=True, help='Forced true/false as string')
     patch_request_parser.add_argument('hi', type=str, required=True, help='HI true/false as string')
+    patch_request_parser.add_argument('provider', type=str, required=False, help='Limit search to this provider')
 
     @authenticate
     @api_ns_episodes_subtitles.doc(parser=patch_request_parser)
     @api_ns_episodes_subtitles.response(204, 'Success')
     @api_ns_episodes_subtitles.response(401, 'Not Authenticated')
+    @api_ns_episodes_subtitles.response(400, 'Provider is not enabled or available')
     @api_ns_episodes_subtitles.response(404, 'Episode not found')
     @api_ns_episodes_subtitles.response(409, 'Unable to save subtitles file. Permission or path mapping issue?')
     @api_ns_episodes_subtitles.response(500, 'Custom error messages')
     def patch(self):
         """Download an episode subtitles"""
         args = self.patch_request_parser.parse_args()
+        provider = args.get('provider')
+
+        if provider is not None and provider not in (get_providers() or []):
+            return 'Provider is not enabled or available', 400
 
         episode_download_specific_subtitles(sonarr_series_id=args.get('seriesid'),
                                             sonarr_episode_id=args.get('episodeid'),
                                             language=args.get('language'), hi=args.get('hi').capitalize(),
-                                            forced=args.get('forced').capitalize(), job_id=None)
+                                            forced=args.get('forced').capitalize(), job_id=None,
+                                            provider=provider)
 
         return '', 204
 

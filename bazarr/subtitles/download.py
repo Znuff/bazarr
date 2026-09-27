@@ -28,7 +28,7 @@ from .processing import process_subtitle
 @update_pools
 def generate_subtitles(path, languages, audio_language, sceneName, title, media_type, profile_id,
                        forced_minimum_score=None, is_upgrade=False, check_if_still_required=False,
-                       previous_subtitles_to_delete=None, job_id=None, fallback_allowed=False):
+                       previous_subtitles_to_delete=None, job_id=None, fallback_allowed=False, provider=None):
     if not languages:
         return None
 
@@ -39,7 +39,7 @@ def generate_subtitles(path, languages, audio_language, sceneName, title, media_
     else:
         os.environ["SZ_KEEP_ENCODING"] = "True"
 
-    pool = _get_pool(media_type, profile_id)
+    pool = _get_pool(media_type, profile_id, providers=[provider] if provider else None)
     providers = pool.providers
 
     language_set = _get_language_obj(languages=languages)
